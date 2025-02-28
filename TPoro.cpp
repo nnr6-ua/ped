@@ -15,20 +15,20 @@ TPoro::TPoro(int xx, int yy, double vv){
     volumen = vv;
     color = NULL;
 }
+
 //Constructor sobrecargado con color
 // El color tiene que estar en minusculas
 TPoro::TPoro(int xx, int yy, double vv, char * cc){
     x = xx;
     y = yy; 
     volumen = vv;
-    char *color = new char; 
 
     if(cc != nullptr){
+        color = new char[strlen(cc) + 1]; 
         strcpy(color,cc);
         for(int i = 0; i < strlen(cc); i++){
             color[i] = tolower(cc[i]);
         }
-    
     } else {
         color = NULL; 
     }
@@ -39,8 +39,9 @@ TPoro::TPoro(TPoro & poro){
     x = poro.x; 
     y = poro.y; 
     volumen = poro.volumen;
-    *color = (*poro.color);
+
     if(poro.color != nullptr){
+        color = new char[strlen(cc) + 1];
         strcpy(color,poro.color);
         for(int i = 0; i < strlen(poro.color); i++){
             color[i] = tolower(color[i]);
@@ -55,12 +56,30 @@ TPoro::~TPoro(){
     x = 0;
     y = 0; 
     volumen = 0; 
+    if(color != nullptr){
+        delete color;
+        color = NULL;
+    }
 }
 
 //Copias en A (this) la información de B, pero no se machaca,
 //si no que tu tienes que liberar los recursos primeros 
 //VER SEMINARIO 
-//TPoro & TPoro::operator=(const TPoro & poro){}
+TPoro & TPoro::operator=(const  TPoro & poro){
+    (*this).~TPoro();
+
+    x = poro.x;
+    y = poro.y;
+    volumen = poro.volumen;
+    
+    if(color !=null){
+        delete color;
+    }
+    color = new char;
+    color = 
+
+    
+}
 
 
 //Dos poros son iguales si están en la misma coordenada,
@@ -70,7 +89,6 @@ bool TPoro::operator==(const TPoro & poro){
     && y == poro.y 
     && volumen == poro.volumen
     && *color == *poro.color);
-
 }
 
 bool TPoro::operator!=(const TPoro & poro){
@@ -90,7 +108,15 @@ void TPoro::Volumen(double vv){
 
 //Setter color
 void TPoro::Color(char * cc){
-    *color = *cc;
+    if(cc == nullptr){
+        color == NULL
+    }
+    else{
+
+    }
+    color = new *char;
+
+    color = *cc;
 }
 
 //Getter x
@@ -110,6 +136,13 @@ double TPoro::Volumen(){
 
 //Getter volumen
 char * TPoro::Color(){
+    if(color == nullptr){
+        return NULL;
+    }
+    else{
+        char * copia = new char;
+        return copia; 
+    }
     char * copia = color;
     return copia; 
 }
