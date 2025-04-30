@@ -79,11 +79,10 @@ bool TABBPoro::Insertar(const TPoro & poro){
     if((*this).Buscar(poro)) return insertado;
 
     if((*this).EsVacio()){
-        TNodoABB nuevo = TNodoABB();
-        nuevo.item = poro;
-        nuevo.iz = TABBPoro();
-        nuevo.de = TABBPoro();
-        nodo = &nuevo;
+        nodo = new TNodoABB();
+        (*nodo).item = poro;
+        (*nodo).iz = TABBPoro();
+        (*nodo).de = TABBPoro();
         insertado = true;
     }
 
@@ -94,57 +93,64 @@ bool TABBPoro::Insertar(const TPoro & poro){
     else if(poro.Volumen() > (*nodo).item.Volumen()){
         insertado = (*nodo).de.Insertar(poro); //enraizar( i, x, insertar( d, y ) ) 
     }
-    
-    //PREGUNTAR QUE PASA SI EL VOLUMEN ES IGUAL 
 
     return insertado;
 }
 
 TPoro TABBPoro::Max() const {
-    if (EsVacio()) return TPoro(); //error_item()
+    if (EsVacio()) return TPoro(); 
 
-    if ((*nodo).iz.EsVacio())
+    if ((*nodo).de.EsVacio())
         return (*nodo).item;
     else
         return (*nodo).de.Max();
 }
 
 
-bool TABBPoro::Borrar(const TPoro &poro){
-    bool borrado = false; 
+bool TABBPoro::Borrar(const TPoro &poro) {
+    if (EsVacio()) return false;
 
-    if(!(*this).Buscar(poro)){
-        return borrado;
-    }
+    bool borrado = false;
 
-    if(poro.Volumen() < (*nodo).item.Volumen()){
+    if (poro.Volumen() < (*nodo).item.Volumen()) {
         borrado = (*nodo).iz.Borrar(poro);
     }
-    else if(poro.Volumen() > (*nodo).item.Volumen()){
+    else if (poro.Volumen() > (*nodo).item.Volumen()) {
         borrado = (*nodo).de.Borrar(poro);
-    }
-    if(poro.Volumen() == (*nodo).item.Volumen()){
+    } 
+    else { 
         if ((*nodo).iz.EsVacio() && (*nodo).de.EsVacio()) {
             delete nodo;
             nodo = nullptr;
             borrado = true;
         }
-        else if((*nodo).iz.EsVacio()){
-            (*nodo).item = (*nodo).de.nodo->item;
+
+        else if ((*nodo).iz.EsVacio()) {
+            TABBPoro aux = (*nodo).de;
+            delete nodo;
+            nodo = aux.nodo;
+            aux.nodo = nullptr;
             borrado = true;
         }
-        else if((*nodo).de.EsVacio()){
-            (*nodo).item = (*nodo).iz.nodo->item;
+
+        else if ((*nodo).de.EsVacio()) {
+            TABBPoro aux = (*nodo).iz;
+            delete nodo;
+            nodo = aux.nodo;
+            aux.nodo = nullptr;
             borrado = true;
-        }    
-        else{
-            TPoro maximo = (*nodo).iz.Max();
-            (*nodo).item = maximo;
-            (*nodo).iz.Borrar(maximo);
+        }
+
+        else {
+            TPoro maximo = (*nodo).iz.Max(); 
+            (*nodo).item = maximo; 
+            borrado = (*nodo).iz.Borrar(maximo); 
         }
     }
+
     return borrado;
 }
+
 
 bool TABBPoro::Buscar(const TPoro & poro) const{
     bool encontrado = false; 
@@ -169,6 +175,9 @@ bool TABBPoro::Buscar(const TPoro & poro) const{
 }
 
 TPoro TABBPoro::Raiz() const{
+    if((*this).EsVacio()){
+        return TPoro();
+    }
     return (*nodo).item;
 }
 
@@ -230,12 +239,12 @@ TVectorPoro TABBPoro::Postorden() const{
 }
 
 /*cola.push(valor);	Inserta un valor al FINAL de la cola
-cola.front();	DEVUELVE el primer elemento (sin eliminarlo)
-cola.pop();	ELIMINA el primer elemento de la cola
+cola.front();	DEVUELVE el primer elemento
+cola.pop();	ELIMINA el primer elemento
 cola.empty();
 cola.size();
 */
-TVectorPoro TABBPoro::Niveles(){
+TVectorPoro TABBPoro::Niveles() const{
     TVectorPoro vector(Nodos());
     int i = 1;
 
@@ -243,11 +252,11 @@ TVectorPoro TABBPoro::Niveles(){
         return TVectorPoro();
     }
 
-    queue<TABBPoro*> cola;
+    queue<const TABBPoro*> cola; //le pones el const y asi no salta error
     cola.push(this);
 
     while (!cola.empty()) {
-        TABBPoro* actual = cola.front();
+        const TABBPoro* actual = cola.front();
         cola.pop();
 
         if ((*actual).nodo != nullptr) {
@@ -266,15 +275,30 @@ TVectorPoro TABBPoro::Niveles(){
 }
 
 TABBPoro TABBPoro::operator+(TABBPoro & arbol){
-    TVectorPoro vector(Nodos()) = (*this).Inorden();
-    TVectorPoro vector2(arbol.Nodos()) = arbol.Inorden();
-    return vector + vector2;
+    TABBPoro suma(*this); 
+    TVectorPoro vector(arbol.Nodos());
+    vector = arbol.Inorden();
+    
+    for (int i = 1; i <= vector.Longitud(); i++) {
+        suma.Insertar(vector[i]);
+    }
+    return suma;
 }
 
-TABBPoro TABBPoro::operator-(TABBPoro &){
-
+TABBPoro TABBPoro::operator-(TABBPoro &arbol){
+    TABBPoro resta;
+    TVectorPoro vector = (*this).Inorden(); 
+    for (int i = 1; i <= vector.Longitud(); i++) {
+        if (!arbol.Buscar(vector[i])) {
+            resta.Insertar(vector[i]);
+        }
+    }
+    return resta;
 }
 
 ostream & operator<<(ostream &os,const TABBPoro &arbol){
+    TVectorPoro vector = arbol.Niveles(); 
+    os << vector; 
 
+    return os;
 }

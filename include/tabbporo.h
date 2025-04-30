@@ -35,7 +35,7 @@ class TABBPoro {
        TVectorPoro Inorden() const;
        TVectorPoro Preorden() const;
        TVectorPoro Postorden() const; 
-       TVectorPoro Niveles(); 
+       TVectorPoro Niveles() const; 
        TABBPoro operator+( TABBPoro &); 
        TABBPoro operator-( TABBPoro &);
     
